@@ -1,3 +1,4 @@
+'''
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
@@ -60,6 +61,7 @@ for (i = 0; i < x; i++) {
 
 return 0;
 }
+'''
 OUTPUT
 
 ![image](https://github.com/user-attachments/assets/e55f66ad-822d-4e12-b9f0-2249627d17b0)
