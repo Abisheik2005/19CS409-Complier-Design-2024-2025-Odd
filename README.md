@@ -1,89 +1,127 @@
-# Ex. No : 1	
-# IMPLEMENTATION OF SYMBOL TABLE 
+# Ex. No : 2	
+# GENERATION OF LEXICAL TOKENS LEX/FLEX TOOL
 ## Register Number :212223040005
 
 
 ## AIM   
-To write a C program to implement a symbol table.
+To write a lex program to implement lexical analyzer to recognize a few patterns.
 
 ## ALGORITHM
 1.	Start the program.
-2.	Get the input from the user with the terminating symbol ‘$’.
-3.	Allocate memory for the variable by dynamic memory allocation function.
-4.	If the next character of the symbol is an operator then only the memory is allocated.
-5.	While reading, the input symbol is inserted into symbol table along with its memory address.
-6.	The steps are repeated till ‘$’ is reached.
-7.	To reach a variable, enter the variable to be searched and symbol table has been checked for corresponding variable, the variable along with its address is displayed as result.
-8.	Stop the program. 
+2.	Lex program consists of three parts.
+    a.	Declaration %%
+    b.	Translation rules %%
+    c.	Auxilary procedure.
+3.	The declaration section includes declaration of variables, maintest, constants and regular definitions.
+4.	Translation rule of lex program are statements of the form
+    a.	P1 {action}
+    b.	P2 {action}
+    c.	…
+    d.	…
+    e.	Pn {action}
+5.	Write a program in the vi editor and save it with .l extension.
+6.	Compile the lex program with lex compiler to produce output file as lex.yy.c. eg $ lex filename.l $ cc lex.yy.c
+7.	Compile that file with C compiler and verify the output.
 
 ## PROGRAM
 ```
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-#include <stdlib.h> 
-#define MAX_EXPRESSION_SIZE 100
+%{
+/* program to recognize a C program */
+int COMMENT = 0;
+%}
 
-int main() {
-int i = 0, j = 0, x = 0, n, flag = 0;
-void *add[5];
-char b[MAX_EXPRESSION_SIZE], d[15], c, srch;
+identifier [a-zA-Z_][a-zA-Z0-9_]*
 
-printf("Enter the Expression terminated by $: ");
-while ((c = getchar()) != '$' && i < MAX_EXPRESSION_SIZE - 1) {
-    b[i++] = c;
+%%
+
+#.* { printf("\n%s is a PREPROCESSOR DIRECTIVE", yytext); }
+
+int|float|char|double|while|for|do|if|break|continue|void|switch|case|long|struct|const|typedef|return|else|goto { 
+    printf("\n\t%s is a KEYWORD", yytext); 
 }
-b[i] = '\0'; 
-n = i - 1;  
 
-printf("Given Expression: %s\n", b);
+"/*" { COMMENT = 1; }
+"*/" { COMMENT = 0; }
 
-printf("\nSymbol Table\n");
-printf("Symbol\taddr\ttype\n");
+{identifier}\( { 
+    if (!COMMENT) 
+        printf("\n\nFUNCTION\n\t%s", yytext); 
+}
 
-for (j = 0; j <= n; j++) {
-    c = b[j];
-    if (isalpha((unsigned char)c)) {
-        if (j == n || b[j + 1] == '+' || b[j + 1] == '-' || b[j + 1] == '*' || b[j + 1] == '=') {
-            void *p = malloc(sizeof(char));
-            if (p == NULL) {
-                printf("Memory allocation failed\n");
-                return 1;
-            }
-            add[x] = p;
-            d[x] = c;
-            printf("%c\t%p\tidentifier\n", c, p);
-            x++;
+\{ { 
+    if (!COMMENT) 
+        printf("\n BLOCK BEGINS"); 
+}
+
+\} { 
+    if (!COMMENT) 
+        printf("\n BLOCK ENDS"); 
+}
+
+{identifier}(\[[0-9]*\])? { 
+    if (!COMMENT) 
+        printf("\n %s is an IDENTIFIER", yytext); 
+}
+
+\".*\" { 
+    if (!COMMENT) 
+        printf("\n\t%s is a STRING", yytext); 
+}
+
+[0-9]+ { 
+    if (!COMMENT) 
+        printf("\n\t%s is a NUMBER", yytext); 
+}
+
+\)(\;)? { 
+    if (!COMMENT) { 
+        printf("\n\t"); 
+        ECHO; 
+        printf("\n"); 
+    }
+}
+
+\( { ECHO; }
+
+= { 
+    if (!COMMENT) 
+        printf("\n\t%s is an ASSIGNMENT OPERATOR", yytext); 
+}
+
+\+|\-|\*|\/ { 
+    if (!COMMENT) 
+        printf("\n\t%s is an ARITHMETIC OPERATOR", yytext); 
+}
+
+\<=|\>=|\<|==|\> { 
+    if (!COMMENT) 
+        printf("\n\t%s is a RELATIONAL OPERATOR", yytext); 
+}
+
+%%
+
+int main(int argc, char **argv) {
+    if (argc > 1) {
+        FILE *file;
+        file = fopen(argv[1], "r"); 
+        if (!file) {
+            printf("could not open %s \n", argv[1]); 
+            exit(0);
         }
+        yyin = file;
     }
+    yylex();
+    printf("\n\n");
+    return 0;
 }
 
-printf("\nThe symbol to be searched: ");
-getchar(); 
-srch = getchar();
-
-for (i = 0; i < x; i++) { 
-    if (srch == d[i]) {
-        printf("Symbol Found\n");
-        printf("%c@address %p\n", srch, add[i]);
-        flag = 1;
-        break; 
-    }
-}
-
-if (flag == 0)
-    printf("Symbol Not Found\n");
-
-for (i = 0; i < x; i++) { 
-    free(add[i]);
-}
-
-return 0;
+int yywrap() { 
+    return 1; 
 }
 ```
 
 ## OUTPUT 
-<img height=20% width=40% src="https://github.com/user-attachments/assets/54b814df-98cd-48e3-a1dd-59f0191c47f9">
+![image](https://github.com/user-attachments/assets/145d6b96-c1a0-4c5a-a28f-0143be835f25)
 
 ## RESULT
-The program to implement a symbol table is executed and the output is verified.
+The lexical analyzer is implemented using lex and the output is verified.
